@@ -1,40 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react"
 
-const format = (timer) => {
-  const mins = Math.floor(timer / 60);
-  timer %= 60;
-  return `${mins}:${timer < 10 ? "0" : ""}${timer}`;
-};
-export default function App() {
-  const [activate, setActivate] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const toggle = () => {
-    setActivate((prevActivate) => !prevActivate);
-  };
+const StopWatch = ()=>{
+const [elapsedTime , setElapsedTime] = useState(0)
+const [isActive , setIsActive] = useState(false)
+const intervalRef = useRef(0)
 
-  useEffect(() => {
-    let intervalId;
-    if (activate) {
-      intervalId = setInterval(() => {
-        setTimer((prevTimer) => prevTimer + 1);
-      }, 1000);
-    } else {
-      clearInterval(intervalId);
-    }
 
-    return () => clearInterval(intervalId);
-  }, [activate]);
 
-  const reset = () => {
-    setTimer(0);
-    setActivate(false);
-  };
+useEffect(()=>{
+ if(isActive){
+    intervalRef.current = setInterval(()=>{
+    setElapsedTime(prevElapsedTime => prevElapsedTime +1)
+    },1000)
+ }else{
+    clearInterval(intervalRef.current)
+ }
 
-  return (
-    <div className="App">
-      <p>{format(timer)}</p>
-      <button onClick={toggle}>{activate ? "Stop" : "Start"}</button>
-      <button onClick={reset}>Reset</button>
-    </div>
-  );
+ return ()=> clearInterval(intervalRef.current)
+},[isActive])
+
+const handleReset = ()=>{
+    setIsActive(false)
+    setElapsedTime(0)
 }
+
+const timeFormat = (seconds)=>{
+    const minute = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minute}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`
+}
+    return(
+        <div >
+            <h1>Stopwatch</h1>
+            <p>Time: {timeFormat(elapsedTime)}</p>
+            <button onClick={()=> setIsActive(prevValue => !prevValue)}>{!isActive ? "Start" : "Stop"}</button>
+            <button onClick={handleReset}>Reset</button>
+        </div>
+    )
+}
+export default StopWatch
